@@ -1,0 +1,173 @@
+
+
+-- The basic stream
+
+
+ -- Types of streams 
+     Writable, Readable, Duplex, Transform 
+
+
+
+-- Source of stream
+    HTTP requests, on the client && HTTP responses, on the server || duplex
+    fs write streams | writable
+    zlib streams || readable, writable, duplex, transform
+    crypto streams || readable, writable, duplex, transform
+    TCP sockets || duplex, readable, writable duplex transform     
+    child process stdin 
+    process.stdout, process.stderr
+    Readable.from(any) - from stream | by default Objectmode is true in Readable.from()
+
+
+
+-- Types of stream
+
+  * Stream Promise APi
+        - stream.pipeline(streams, options)
+        - stream.pipeline(source, ...transform, destination, options)
+        - stream.finished(stream, options)
+        
+  * Objectmode
+        strings | buffers | TypeArray | DataView(Int32Array, Uint8Array)
+
+  * Buffering Mode
+        
+        - Readable and Writable will go to Internal buffer
+        - highWatermark threshold limits the data 
+        - Data is buffered in Readable when use stream.push(chunks)
+        - Without consumer data will only remain in internal buffer 
+        - Once highWatermark is reach it wont consume more data until internal buffer is free again (wont call readable._read())
+        - By repeatedly calling writable.write(chunks), Data is buffered in Writable Stream
+        - Writing data size < highWatermark | writable.write() -> true otherwise false
+        - stream.pipe() goal is to prevent overwhelming the available memory by handling it good
+        - highWatermark is treshold not absolute limit, it reminds how data stops before it ask more data
+        - Duplex and Transform are both Readable and Writable contains two separate internal buffer for reading and writing
+
+
+
+-- Writable Stream
+    Events 
+    close | drain | error | finish | pipe | unpipe
+
+    Backpressure - when writing and reaching the threshold limit of internal buffer
+    when emptied again it will trigger 'drain' events, 
+    this techniques allow us to respect threshold limit of internal buffer
+
+
+
+-- Readable Stream
+    Events
+    close | data | end | error | pause | readable  
+
+-- Readable Stream 
+    Backpressure - When it read stream more than it consume from the internal buffer
+    Two reading modes
+        * flowing -- automatic read with events 
+        * paused -- explicit read using stream.read() 
+        * pause -> flowing
+                add 'data' events
+                call stream.resume()
+                call stream.pipe() to send data to writable
+        * flowing -> pause 
+                call stream.pause() - means no pipe destination 
+                call stream.unpipe() - remove multiple pipes
+
+        ** if the consuming mechanisms is disabled or taken away the readable will attempt to stop
+        ** remowing data event will not guarante to switch back to paused mode
+        ** if there are pipe destination calling stream.pause() not guarante stream will remain pause
+        ** when switch back to flowing mode without consumer, data will be lost |
+        will occure when calling stream.resume() wihout 'data' event handler | when 'data' event handler is not there
+
+
+-- Reading Non-flowing mode
+        stream.on('readable') -> needs to repeatedly call the stream.read() to consume streams from internal buffer
+
+-- Reading Flowing mode
+        stream.on('read', (data) => {}) -> automatic process chunks 
+
+-- Reading Stream Async Iterators 
+        using for await loop
+
+
+
+-- Three States
+    This is more of a complex internal management happening in Readable Stream\
+
+    readable.readableFlowing === null | no mechanisms for consumption happened
+                add 'data' events
+                call stream.resume()
+                call stream.pipe() to send data to writable
+
+                - implementing one of these three will turn (null -> true, flowing emitting events); 
+
+    readable.readableFlowing === false | halting the flowing events but not the generation of data
+                call stream.pause() - means no pipe destination 
+                call stream.unpipe() - remove multiple pipes
+
+                - will turn the (true -> false, halting not stop generate)
+                - However attaching an 'data' event will not switch to true  
+                - possible scenario in paused -> internal generation of data
+                
+    readable.readableFlowing === true
+                - readable data will work fine
+
+
+-- Choose One Api Style
+
+    - Developers should not practice using multiple way of api style but instead practice one
+    - Dont combine on('data'), on('readable'), pipe(), async iterator
+
+
+
+-- Readable and Writable Summary
+
+    -> Readable stream internals, push a data to internal buffer and reads it
+    -> Writable stream internals, push a data to internal using write, then transfer data into source destination
+
+
+
+-- Duplex
+
+    -> Duplex stream internals, allows both source and destination   
+    -> allowHalfOpen(default true), when false, make one of the read or write stream to end if one of them Developers
+    -> It just Readable and Writable
+
+-- Transform
+
+    -> Is a special kind of duplex that makes data configurations | can use the this.push(), _write()
+     * writable( _write) -> transform (duplex kind) [using this.push() = it uses the internal read buffer as path ] -> read( _read)
+
+-- Passthrough
+
+    -> Customize transform use to observed through while piping or processing
+    -> createReadStream(filename).pipe(createGzip())
+                              .pipe(monitor)
+                              .pipe(createWriteStream(`${filename}.gz`));
+    -> Use a PassThrough stream when you need to provide a placeholder for data
+       that will be read or written in the future.
+
+
+
+
+
+
+
+
+CRUD stream
+ we will use fs stream for simplicity 
+
+create 
+read
+update 
+delete
+
+
+-- creating a stream
+-- reading a stream
+-- writing a stream
+-- deleting a stream
+
+
+
+
+
