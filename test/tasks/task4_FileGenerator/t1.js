@@ -79,8 +79,6 @@ function generateRandomFiles(filepath, fileCounts, contentSize) {
     }
 }
 
-
-
 console.log(await generateDirs('test', 10, 300));
+// console.log(import.meta.url);
 
-console.log(import.meta.url);

@@ -25,15 +25,12 @@ async function fileGeneration (counts) {
     const url = new URL('./generated', import.meta.url);
     // const pathDir = path.dirname(url);
     console.log('url', url)
-
     try {
     const createDir = await mkdir(url, {recursive : true});
 
     for(let i = 0; i< counts; i++) {
         await writeFile(url.pathname + `/newFile${i}.txt`, 'hello');
     }
-
-
     console.log('Succesfully created a list of file ');
     } catch(err) {
         console.log(err);

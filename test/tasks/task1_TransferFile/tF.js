@@ -2,6 +2,16 @@ import { open, stat } from 'fs/promises';
 import chalk from 'chalk';
 // promise / await
 
+
+
+
+// get file length
+// set stream encoding
+// init progress = 0
+// init data chunks
+// read stream pause mode 
+// check backpressure
+
 async function transferFile(source, dest) {
     const readStreamFd = await open(source);
     const writeStreamFd = await open(dest, 'w');
