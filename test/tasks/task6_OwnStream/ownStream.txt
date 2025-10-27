@@ -1,0 +1,10 @@
+
+
+
+// Get more comprehensive in readable stream - 
+
+// also more practice in duplex and transform
+// make some intermediate level project
+-- encryption, deletion, conversion, connection,  
+
+
