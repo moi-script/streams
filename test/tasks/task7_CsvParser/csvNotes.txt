@@ -1,0 +1,9 @@
+Semicolon (;)
+Tab (\t)
+Space ( )
+Single or Double Quotation Marks (”) (“”)
+Pipe (|)
+
+
+
+
