@@ -1,0 +1,10 @@
+
+zlib
+os
+crypto
+util
+timers/promises
+dns
+worker_threads
+cluster
+perf_hooks

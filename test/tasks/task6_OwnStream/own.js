@@ -1,9 +1,9 @@
 
 
-import { Readable, Writable } from 'stream';
+import Stream, { Readable, Writable, Transform, Duplex } from 'stream';
 import Chance from 'chance';
 import fs, { mkdir } from 'fs/promises';
-import path from 'path';
+import path, { extname } from 'path';
 import { fileURLToPath } from 'url';
 // -- The reason why we read a stream is to write it to writable
 
@@ -29,9 +29,9 @@ class NewStreams extends Readable {
         this.push(await delay());
         this.switch = true;
 
-        if(this.switch) {
+        if (this.switch) {
             throw new Error("Switch was activated.");
-        } 
+        }
         this.push(null);
     }
 }
@@ -62,7 +62,7 @@ class TestReadableInstance extends Readable {
         this.push(null);
     }
 
-      print() {
+    print() {
         this.on('data', data => console.log(data.toString()));
     }
 
@@ -97,14 +97,14 @@ class TestReadableInstance extends Readable {
 
 
 const testWritableInstance = new Writable({
-    objectMode : true,
+    objectMode: true,
     write(chunks, encoding, cb) {
         // const chunksObject = chunks.toString();
 
         console.log('Chunks recieved value :: ', chunks);
-        const projectFolder = new URL( './test', import.meta.url);
+        const projectFolder = new URL('./test', import.meta.url);
         const validFilePath = fileURLToPath(projectFolder);
-        
+
         // test object mode
         // console.log("Object mode :: ", chunks.message);
 
@@ -113,18 +113,17 @@ const testWritableInstance = new Writable({
     }
 });
 
-
 // might be better
 const pipingReadStreamInstance = new Readable({
-    objectMode : true,
+    objectMode: true,
     read() {
         // always string or buffer
-        this.push(JSON.stringify([{message1 : 'hello'}, {message2 : 'world'}]));
+        this.push(JSON.stringify([{ message1: 'hello' }, { message2: 'world' }]));
         this.push(null);
     }
 })
 
-pipingReadStreamInstance.pipe(testWritableInstance);
+// pipingReadStreamInstance.pipe(testWritableInstance);
 
 
 
@@ -142,3 +141,123 @@ pipingReadStreamInstance.pipe(testWritableInstance);
 // console.log('Valid file path :: ', fileURLToPath(projectFolder));
 
 
+const searchStr = 'World' 
+const replaceStr = 'Node.js'
+let tail = ''
+
+// Pieces 
+// [ 'Hello W' ]
+// [ 'lo WNode.js' ]
+
+// Last pieces
+// Hello W
+// lo WNode.js
+
+// tail
+// lo W
+// e.js
+
+// Pieces 
+// [ 'Hel' ]
+// [ 'lo WNod' ]
+
+// Messy example for raplacing a string,
+// this wont be suggested
+// _write(chunks, encoding, cb);
+
+
+
+class DuplexStream extends Duplex {
+    constructor(options = {}) {
+        options.objectMode = true;
+        super(options);
+        this.initVal = 'Hello world';
+    }
+    // it allows to init data in internal buffer
+    _read() {
+        this.push(this.initVal);
+        this.push(null);
+    }
+
+    _write(chunks, encoding, cb) {
+        fs.writeFile(chunks, this.initVal);
+        cb();
+    }
+}
+const strDups = new DuplexStream();
+
+
+class DuplexStreamPipe2 extends Duplex {
+    constructor(options = {}) {
+        options.objectMode = true;
+        super(options)
+    }
+
+    _write(chunks, encoding, cb) {
+        console.log('Piping to stream 2');
+        this.push(chunks);
+        this.push(null);
+        cb();
+    }
+}
+
+
+class DuplexStreamPipe3 extends Duplex {
+    constructor(dest, options ={}){
+        options.objectMode = true;
+        super(options);
+        this.path = dest;
+    }
+
+    _write(chunks, encoding, cb) {
+        console.log('Piping to stream 3');
+        fs.writeFile(this.path, chunks);
+        console.log('Succesfully write a file : ');
+    }
+
+}
+
+// This chain pipes, demonstrate that using duplex can definitely connect all since
+// piping means readable -> writable, since duplex is both [readable, writable] -> [readble, writable]
+// it allows to pass through next
+
+
+strDups.pipe(new DuplexStreamPipe2())
+       .pipe(new DuplexStreamPipe3('ownStream.txt'));
+
+// strDups.on('data', data => console.log('Data :: ', data));
+// strDups.on('end', () => strDups.write('ownStream.txt'));
+
+// This implies that it also needs some config handler which resulted in Transform and Passthrough
+
+// transform allow us to use transform(), and also flush() before stream ended.
+const replaceStream = new Transform({
+    defaultEncoding: 'utf8',
+    transform(chunk, encoding, cb) {
+        const pieces = (tail + chunk).split(searchStr)
+        // console.log('Pieces :: ', pieces);
+        const lastPiece = pieces[pieces.length - 1]
+        // console.log('Last piece:: ', lastPiece);
+
+        const tailLen = searchStr.length - 1
+        tail = lastPiece.slice(-tailLen)
+        // console.log('Tail val ::', tail);
+        pieces[pieces.length - 1] = lastPiece.slice(0, -tailLen)
+        // console.log('Pieces :: ', pieces);
+        this.push(pieces.join(replaceStr))
+        cb()
+    },
+    flush(cb) {
+        // console.log('Tail val ::', tail)
+        this.push(tail)
+        cb()
+    }
+})
+
+
+// replaceStream.write('Hello W');
+// replaceStream.write('Node.js');
+// replaceStream.end();
+
+
+// replaceStream.on('data', chunk => console.log('Output :: ', chunk.toString()))

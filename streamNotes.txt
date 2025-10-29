@@ -44,7 +44,6 @@
         - Duplex and Transform are both Readable and Writable contains two separate internal buffer for reading and writing
 
 
-
 -- Writable Stream
     Events 
     close | drain | error | finish | pipe | unpipe
