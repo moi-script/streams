@@ -1,0 +1,144 @@
+1. Create a Custom Transform Stream That Censors Bad Words
+
+Input: a text file containing sentences
+
+Output: a version where banned words are replaced with "***"
+
+Requirements:
+
+Use a custom Transform stream
+
+Handle partial word splits across chunk boundaries
+
+2. Implement a Large File Line Counter Without Loading It Into Memory
+
+Read a multi-gigabyte file
+
+Count the number of lines efficiently
+
+Use:
+
+fs.createReadStream
+
+readline or manual buffer scanning
+
+Ensure it runs in constant memory.
+
+3. Build a Stream Pipeline That Compresses → Encrypts → Uploads
+
+Create a pipeline:
+
+ReadStream → gzip → AES-256 encrypt → HTTP upload request (stream)
+
+
+Requirements:
+
+Use stream.promises.pipeline
+
+Proper error handling and cleanup
+
+Optional: rate-limit upload speed with a throttle stream
+
+4. Stream a Video File to an Express Server With Range Support
+
+Implement:
+
+HTTP range header
+
+Partial chunk streaming
+
+Should support:
+
+Seek
+
+Forward/rewind
+
+Use fs.createReadStream with { start, end }.
+
+5. Write a Duplex Stream That Logs Every Chunk and Then Forwards It
+
+Like a tap for debugging
+
+Requirements:
+
+Create a Duplex class
+
+Log incoming data
+
+Forward it unchanged
+
+Test by piping files through it.
+
+6. Build a CSV Parser Using Native Streams (No Libraries)
+
+Input: huge CSV file
+
+Output: objects streamed row by row
+
+Handle:
+
+commas inside quotes
+
+escaped quotes
+
+Push parsed objects from a custom Transform.
+
+7. Create a Stream-Based Reverse Proxy (No Buffers, Fully Streaming)
+
+Forward incoming request to another server
+
+Pipe:
+
+req → remoteRequest → res
+
+
+Requirements:
+
+Stream request data directly
+
+Stream response back
+
+No temporary buffers
+
+Bonus: Add timeout + retry logic.
+
+8. Build a Custom Writable Stream That Stores Data Into MongoDB
+
+Example:
+
+Receive JSON objects
+
+Write each into MongoDB collection
+
+Requirements:
+
+Should implement backpressure
+
+Must wait for each DB insert before calling callback()
+
+9. Implement a “Stream Throttler” That Limits Throughput (e.g., 100KB/s)
+
+Custom Transform stream
+
+Only allows N bytes per interval
+
+Use:
+
+setTimeout
+
+internal buffers
+
+backpressure awareness
+
+10. Write a Multi-File Merge Stream
+
+Given multiple sorted input text files
+
+Merge into one sorted output
+
+
+Should:
+Use multiple ReadStreams
+Maintain a min-heap of current chunks
+Avoid loading entire files
+Fully stream-based merge
