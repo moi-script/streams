@@ -56,7 +56,7 @@ async function processLoops(filePos, fileList, processList, globalFileContent) {
 
         if (filePos.count <= fileList.length) {
             filePos.count++;
-            return processLoops(filePos, fileList, processList, globalFileContent);
+            return await processLoops(filePos, fileList, processList, globalFileContent);
         }
         // after process loops we can use the file creation and  fileContentsTransfer
     }
@@ -76,7 +76,7 @@ async function MergeFile(filePos, files, globalFileContent) {
     const data = await processLoops(filePos, files, genFiles, globalFileContent);
     writeFileContents(data, 'MergeFile.txt');
 }
-await MergeFile(filePos, files, globalFileContent);
+  await MergeFile(filePos, files, globalFileContent);
 
 
 function writeFileContents(data, dest) {

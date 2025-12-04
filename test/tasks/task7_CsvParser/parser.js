@@ -1,3 +1,4 @@
+import chalk from 'chalk';
 import { readFile, writeFile } from 'fs/promises';
 import { Readable } from 'stream';
 
@@ -60,9 +61,8 @@ class ParseCsv extends Readable {
         const newLineIndex = data.split('').indexOf('\n') + 1;
         return this.getBeforeNewLine(data, newLineIndex);
     }
-
     async _read() {
-        console.log('click2')
+        // console.log('click2')
         this.push(await this.getFileData(this.path));
         this.push(null);
 
@@ -70,7 +70,6 @@ class ParseCsv extends Readable {
 
         // this.push(null); // might get stop after internal buffer consumed
     }
-
     readFileStream() {
         console.log('click1')
 
@@ -102,21 +101,44 @@ class ParseCsv extends Readable {
     }
 }
 
-export function converCSV(source, dest) {
+
+function csvProcess(parseStream) {
+    const header = parseStream.getHeader(parseStream.contents);
+    const rows = parseStream.getRows(parseStream.data.split('\n'));
+    return parseStream.createTableObjJSON(header, rows);
+}
+
+function warn() {
+    console.warn(chalk.red('-- WARNING! - No destination provided then will return.'));
+}
+function successLog() {
+    console.log('Succesfuly converted into file');
+
+}
+// ...args | ([souce, dest], cb)
+export function convertCSVtoJSON(...args) {
+    
+    // callback checking
+    const cb = ((typeof [...args].pop()) === 'function') ? args.pop() : null
+    const [source, dest] = args;
+
+    if (!cb) throw new Error('Undefined callback in promisify');
+
     const parse = new ParseCsv(source, dest);
-
     parse.on('end', async () => {
-        const header = parse.getHeader(parse.contents);
-        const rows = parse.getRows(parse.data.split('\n'));
-        const tableObject = parse.createTableObjJSON(header, rows);
-
+        const tableObject = csvProcess(parse);
         try {
+            if (!dest || (typeof dest === 'undefined')) {
+                warn();
+                return cb(null, tableObject);
+            }
             await writeFile(parse.destination, tableObject);
-            console.log('Succesfuly converted into file');
+            successLog();
+
         } catch (err) {
             console.log('Unable to write a json.');
         }
     })
-    return 1;
+
 }
 

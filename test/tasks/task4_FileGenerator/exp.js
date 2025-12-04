@@ -1,6 +1,5 @@
-import fs from 'fs';
-import { mkdir, writeFile } from 'fs/promises';
-import url from  'url';
+import fs, { writeFileSync } from 'fs';
+import { mkdir } from 'fs/promises';
 import path from 'path';
 // String -> number
 // Number -> String
@@ -11,7 +10,7 @@ import path from 'path';
 // fs 
 
 function stringGen(size) {
-    const ars = Array.from({length : size}, () => {
+    const ars = Array.from({ length: size }, () => {
 
         const randomNums = Math.floor(Math.random() * (90 - 65) + 65);
         return String.fromCharCode(randomNums);
@@ -19,26 +18,43 @@ function stringGen(size) {
     return ars.join('');
 }
 
+function generateFilePath(url, count, _initFile) {
+    const joinedPath = path.join(url.pathname, `${_initFile}${count}.txt`);
+
+    const validPathFile = joinedPath.split('\\');
+    validPathFile.shift();
+
+    const withSep = validPathFile.join('/');
+    return withSep;
+
+}
 
 
-async function fileGeneration (counts) {
-    const url = new URL('./generated', import.meta.url);
-    // const pathDir = path.dirname(url);
-    console.log('url', url)
+export async function fileGeneration(_initFile, metaPath, counts) {
+    if(!_initFile) throw new Error('Invalid file name');
+    console.log('Meta path :: ', metaPath);
+    const url = new URL('./generated', metaPath);
     try {
-    const createDir = await mkdir(url, {recursive : true});
+        await mkdir(url, { recursive: true });
 
-    for(let i = 0; i< counts; i++) {
-        await writeFile(url.pathname + `/newFile${i}.txt`, 'hello');
-    }
-    console.log('Succesfully created a list of file ');
-    } catch(err) {
+        for (let i = 0; i < counts; i++) {
+
+            const validPathFile = generateFilePath(url, i, _initFile);
+            const write = writeFileSync(validPathFile, stringGen(30))
+        }
+        console.log('Succesfully created a list of file ');
+    } catch (err) {
         console.log(err);
     }
 
 }
 
-await fileGeneration(10);
+// await fileGeneration(10);
+
+// \C:\GrindBuffer\stream\test\tasks\task4_FileGenerator\generated\newFile.txt
+// await writeFile('C:/GrindBuffer/stream/test/tasks/task4_FileGenerator/newFile.txt', 'hello world');
+
+
 
 
 
@@ -58,7 +74,7 @@ await fileGeneration(10);
 
 
 
-const newPath =  new URL('https://user:pass@sub.example.com:8080/p/a/t/h?query=string#hash');
+const newPath = new URL('https://user:pass@sub.example.com:8080/p/a/t/h?query=string#hash');
 
 
 
