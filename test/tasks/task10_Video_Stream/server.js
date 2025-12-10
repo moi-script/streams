@@ -11,7 +11,8 @@ const upload = multer({dest : '/uploads'})
 
 
 app.post('/upload', upload.single('video'), (req, res) => {
-
     console.log('Request :: ', req.file);
-    
 })
+
+
+app.listen(3000, () => console.log('Running at http://localhost:3000'))
