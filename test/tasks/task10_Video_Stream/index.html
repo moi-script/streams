@@ -8,7 +8,7 @@
 <body>
     
 
-    <form id="form" action="/upload" method="POST" enctype="multipart/form-data">
+    <form id="form">
         <label for="video">Video</label>
         <input type="file" placeholder="video" name="video">
         <input type="submit">
@@ -17,8 +17,16 @@
     <script>
         const form = document.getElementById('form');
 
-        form.addEventListener('onsubmit', (e) => {
+        form.addEventListener('submit',async (e) => {
             e.preventDefault();
+
+
+            const formData = new FormData(form);
+
+            const res = await fetch('http://localhost:3000/upload', {
+                method : "POST",
+                body : formData
+            });
         } )
 
     </script>

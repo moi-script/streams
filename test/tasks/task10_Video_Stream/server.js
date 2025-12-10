@@ -7,7 +7,7 @@ app.use(express.json());
 app.use(cors());
 
 
-const upload = multer({dest : '/uploads'})
+const upload = multer({dest : 'uploads/'})
 
 
 app.post('/upload', upload.single('video'), (req, res) => {
