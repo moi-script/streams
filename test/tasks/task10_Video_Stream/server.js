@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import fs from 'fs';
 import multer from 'multer';
 import path from 'path';
 const app = express();
@@ -9,6 +10,13 @@ app.use(cors());
 
 
 // const upload = multer({dest : 'uploads/'})
+
+const dirLoc = 'uploads';
+
+if(!fs.existsSync(dirLoc)) {
+    fs.mkdirSync(dirLoc);
+}
+
 
 
 const storage = multer.diskStorage({
