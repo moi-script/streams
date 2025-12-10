@@ -30,7 +30,6 @@ Create a pipeline:
 
 ReadStream → gzip → AES-256 encrypt → HTTP upload request (stream)
 
-
 Requirements:
 
 Use stream.promises.pipeline
